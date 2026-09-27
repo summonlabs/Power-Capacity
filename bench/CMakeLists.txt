@@ -1,0 +1,3 @@
+add_executable(pc_bench_capacity bench_capacity.cpp)
+target_link_libraries(pc_bench_capacity PRIVATE power_capacity)
+power_capacity_apply_strict_options(pc_bench_capacity)

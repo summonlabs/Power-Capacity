@@ -1,0 +1,21 @@
+#pragma once
+
+// Generated from version.hpp.in by the Power Capacity CMake build.
+// Do not edit the generated copy; edit include/power_capacity/version.hpp.in.
+
+#define POWER_CAPACITY_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define POWER_CAPACITY_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define POWER_CAPACITY_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define POWER_CAPACITY_VERSION_STRING "@PROJECT_VERSION@"
+
+namespace power_capacity {
+
+/// Semantic version of the Power Capacity library as compiled into the artifact.
+struct Version {
+  static constexpr int major = POWER_CAPACITY_VERSION_MAJOR;
+  static constexpr int minor = POWER_CAPACITY_VERSION_MINOR;
+  static constexpr int patch = POWER_CAPACITY_VERSION_PATCH;
+  static constexpr const char* string = POWER_CAPACITY_VERSION_STRING;
+};
+
+}  // namespace power_capacity

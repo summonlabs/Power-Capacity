@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/PowerCapacityTargets.cmake")
+
+check_required_components(PowerCapacity)
+
+set(PowerCapacity_VERSION "@PROJECT_VERSION@")
+set(PowerCapacity_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@")
+set(PowerCapacity_VERSION_MINOR "@PROJECT_VERSION_MINOR@")
+set(PowerCapacity_VERSION_PATCH "@PROJECT_VERSION_PATCH@")

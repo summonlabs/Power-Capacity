@@ -1,0 +1,16 @@
+add_executable(pc_example_basic_capacity basic_capacity.cpp)
+target_link_libraries(pc_example_basic_capacity PRIVATE power_capacity)
+power_capacity_apply_strict_options(pc_example_basic_capacity)
+
+add_executable(pc_example_redundancy_bottleneck redundancy_bottleneck.cpp)
+target_link_libraries(pc_example_redundancy_bottleneck PRIVATE power_capacity)
+power_capacity_apply_strict_options(pc_example_redundancy_bottleneck)
+
+add_executable(pc_example_persistence_recovery persistence_recovery.cpp)
+target_link_libraries(pc_example_persistence_recovery PRIVATE power_capacity)
+power_capacity_apply_strict_options(pc_example_persistence_recovery)
+
+add_test(NAME pc_example_basic_capacity COMMAND pc_example_basic_capacity)
+add_test(NAME pc_example_redundancy_bottleneck COMMAND pc_example_redundancy_bottleneck)
+add_test(NAME pc_example_persistence_recovery
+  COMMAND pc_example_persistence_recovery "${CMAKE_CURRENT_BINARY_DIR}/example-store")
