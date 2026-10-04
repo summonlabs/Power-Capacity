@@ -1,8 +1,6 @@
 # Power Capacity
 
-Power Capacity is the electrical-capacity authority of the [Data Center Control
-Plane](https://github.com/summonlabs/.github/blob/main/profile/data-center.md)
-(DCCP), runtime 12 of 72, in Tranche 2 — Facility Capacity and Placement.
+Power Capacity is the electrical-capacity authority for facility power domains.
 
 It answers one question, precisely and with explicit authority:
 
@@ -122,8 +120,6 @@ untouched.
 | --- | --- | --- |
 | ASI (Accelerated Systems Infrastructure) | Accelerator execution, memory, serving, scheduling, reusable state, accelerator-resource semantics | None. No accelerator concept appears in this model. |
 | DFI (Distributed Fabric Infrastructure) | Network topology, paths, transport, network authority, congestion, fabric federation | None. No network concept appears in this model. |
-| DCCP tranche 1 (runtimes 1–8) | Facility identity, topology, assets, racks, physical location, dependencies, state ledger, control-plane epoch | Consumed as evidence: source generations, epoch, and incarnation are cited preconditions, never inferred. |
-| DCCP runtimes 9–11, 13–16 | Space, rack and cooling capacity, reconciliation, facility capacity, reservation, placement | Power Capacity supplies one input and consumes none of their authority. |
 
 Dual-corded delivery, where a load can be served from two independent sources, is
 modelled with a **redundancy group**, not with a second upstream domain. A domain
