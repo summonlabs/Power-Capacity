@@ -101,9 +101,9 @@ Power Capacity deliberately does not implement, and does not contain:
 - **Load Shedding** — it classifies protected load for accounting; it never sheds.
 - **Energy Ledger** — it performs no energy or time integration. There is no kWh
   accounting anywhere in this repository.
-- **Facility Capacity** (runtime 14) — it does not compose space, rack, power, and
+- **Facility Capacity** — it does not compose space, rack, power, and
   cooling into one facility-wide quantity.
-- **Facility Capacity Reservation** (runtime 15) — it does not grant, hold, or
+- **Facility Capacity Reservation** — it does not grant, hold, or
   release reservations.
 
 The last point is enforced by the type system, not by convention. A committed load
@@ -375,7 +375,7 @@ Every mutation carries an explicit `expected_generation`. There is no implicit
 
 ### Control-plane epoch and incarnation
 
-The `(epoch, incarnation)` pair is consumed from the Control Plane Epoch runtime.
+The `(epoch, incarnation)` pair is consumed from the [Control Plane Epoch](https://github.com/summonlabs/Control-Plane-Epoch) runtime.
 It is durable in the store, monotonic, and never regresses: a revalidation that
 cites an older epoch, or the same epoch with an older incarnation, is refused with
 `stale_authority`. Every mutation and query may cite the pair it believes is
