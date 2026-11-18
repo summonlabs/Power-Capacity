@@ -1,9 +1,11 @@
 #include "detail/platform_io.hpp"
 
 #include <cerrno>
+#include <chrono>
 #include <cstring>
 #include <string>
 #include <system_error>
+#include <thread>
 
 #if defined(_WIN32)
 #include <fcntl.h>
@@ -204,8 +206,34 @@ Status sync_directory(const std::filesystem::path& directory) {
 }
 
 Status atomic_replace(const std::filesystem::path& from, const std::filesystem::path& to) {
+  // While a reader has the target open (an inspection, a backup, an antivirus or
+  // indexing scan) the rename fails on Windows until the reader closes it, so
+  // it is retried for a bounded time (about 2 s). A directory or a read-only
+  // file in the way is not transient and fails at once.
   std::error_code error;
-  std::filesystem::rename(from, to, error);
+  for (int attempt = 0;; ++attempt) {
+    std::filesystem::rename(from, to, error);
+    if (!error) {
+      break;
+    }
+#if defined(_WIN32)
+    // ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION and ERROR_LOCK_VIOLATION.
+    std::error_code kind;
+    const std::filesystem::file_status target = std::filesystem::status(to, kind);
+    const bool blocked =
+        kind || std::filesystem::is_directory(target) ||
+        (target.permissions() & std::filesystem::perms::owner_write) == std::filesystem::perms::none;
+    const bool transient = error.category() == std::system_category() &&
+                           (error.value() == 5 || error.value() == 32 || error.value() == 33) &&
+                           !blocked;
+#else
+    const bool transient = false;
+#endif
+    if (!transient || attempt >= 100) {
+      break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
   if (error) {
     return Status::error(StatusCode::IoFailure,
                          "atomic publish of '" + path_utf8(to) + "' from '" + path_utf8(from) +

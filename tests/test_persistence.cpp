@@ -1,10 +1,13 @@
 // Persistence: the artifact envelope, integrity checks, strict read paths,
 // identity and path binding, and close/reopen.
 
+#include <chrono>
 #include <cstdint>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "power_capacity/engine.hpp"
@@ -544,4 +547,47 @@ PC_TEST(persistence, a_unicode_store_path_round_trips) {
   PC_CHECK(opened.value()->close().ok());
   PC_CHECK(std::filesystem::exists(store));
   PC_CHECK(CapacityStore::verify_file(store).ok());
+}
+
+PC_TEST(persistence, a_commit_waits_for_a_reader_of_the_store_file) {
+  TempDir directory;
+  const std::filesystem::path store = directory.file("reader.pcstore");
+  Facility facility(store, false, Tick(100));
+  facility.set_as_of(Tick(120));
+  facility.add_domain(DomainBuilder("busway.main").nominal_watts(400000).usable_watts(400000)
+                          .evidence(Tick(0), Tick(100000)));
+  facility.add_domain(DomainBuilder("pdu.a").nominal_watts(200000).usable_watts(200000)
+                          .parent("busway.main")
+                          .evidence(Tick(0), Tick(100000)));
+  const std::uint64_t before = facility.generation().value();
+
+  bool reader_opened = false;
+  bool committed = false;
+  {
+    // Another tool reading the store (an inspection, a backup, a scan) holds the
+    // artifact open while the next commit replaces it, and closes it shortly
+    // after.
+    std::ifstream reader(store, std::ios::binary);
+    reader_opened = reader.is_open();
+    std::thread writer([&facility, &committed] {
+      try {
+        facility.add_load(make_load("load.a", "pdu.a", 10000));
+        committed = true;
+      } catch (const std::exception&) {
+        committed = false;
+      }
+    });
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    reader.close();
+    writer.join();
+  }
+  PC_CHECK(reader_opened);
+  // The replacement waits for the reader instead of failing the commit.
+  PC_CHECK(committed);
+  PC_CHECK_EQ(facility.generation().value(), before + 1);
+  const auto state = CapacityStore::read_file(store, StoreReadOptions{});
+  PC_CHECK(state.ok());
+  if (state.ok()) {
+    PC_CHECK_EQ(state.value()->generation().value(), before + 1);
+  }
 }
